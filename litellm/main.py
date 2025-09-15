@@ -169,6 +169,8 @@ from .llms.predibase.chat.handler import PredibaseChatCompletion
 from .llms.replicate.chat.handler import completion as replicate_chat_completion
 from .llms.sagemaker.chat.handler import SagemakerChatHandler
 from .llms.sagemaker.completion.handler import SagemakerLLM
+from .llms.sagemaker_apid.completion.handler import SagemakerAPIDLLM
+from .llms.sagemaker_apid.chat.handler import SagemakerAPIDChatHandler
 from .llms.vertex_ai import vertex_ai_non_gemini
 from .llms.vertex_ai.gemini.vertex_and_google_ai_studio_gemini import VertexLLM
 from .llms.vertex_ai.gemini_embeddings.batch_embed_content_handler import (
@@ -249,6 +251,7 @@ vertex_partner_models_chat_completion = VertexAIPartnerModels()
 vertex_model_garden_chat_completion = VertexAIModelGardenModels()
 vertex_text_to_speech = VertexTextToSpeechAPI()
 sagemaker_llm = SagemakerLLM()
+sagemaker_apid_llm = SagemakerAPIDLLM()
 watsonx_chat_completion = WatsonXChatHandler()
 openai_like_embedding = OpenAILikeEmbeddingHandler()
 openai_like_chat_completion = OpenAILikeChatHandler()
@@ -256,6 +259,7 @@ databricks_embedding = DatabricksEmbeddingHandler()
 base_llm_http_handler = BaseLLMHTTPHandler()
 base_llm_aiohttp_handler = BaseLLMAIOHTTPHandler()
 sagemaker_chat_completion = SagemakerChatHandler()
+sagemaker_apid_chat_completion = SagemakerAPIDChatHandler()
 bytez_transformation = BytezChatConfig()
 heroku_transformation = HerokuChatConfig()
 oci_transformation = OCIChatConfig()
@@ -3084,6 +3088,25 @@ def completion(  # type: ignore # noqa: PLR0915
 
             ## RESPONSE OBJECT
             response = model_response
+        elif custom_llm_provider == "sagemaker_apid":
+            # boto3 reads keys from .env
+            model_response = sagemaker_apid_llm.completion(
+                model=model,
+                messages=messages,
+                model_response=model_response,
+                print_verbose=print_verbose,
+                optional_params=optional_params,
+                litellm_params=litellm_params,
+                custom_prompt_dict=custom_prompt_dict,
+                hf_model_name=hf_model_name,
+                logger_fn=logger_fn,
+                encoding=encoding,
+                logging_obj=logging,
+                acompletion=acompletion,
+            )
+
+            ## RESPONSE OBJECT
+            response = model_response          
         elif custom_llm_provider == "bedrock":
             # boto3 reads keys from .env
             custom_prompt_dict = custom_prompt_dict or litellm.custom_prompt_dict
@@ -4335,6 +4358,16 @@ def embedding(  # noqa: PLR0915
                 model_response=EmbeddingResponse(),
                 print_verbose=print_verbose,
             )
+        elif custom_llm_provider == "sagemaker_apid":
+            response = sagemaker_apid_llm.embedding(
+                model=model,
+                input=input,
+                encoding=encoding,
+                logging_obj=logging,
+                optional_params=optional_params,
+                model_response=EmbeddingResponse(),
+                print_verbose=print_verbose,
+            ) 
         elif custom_llm_provider == "mistral":
             api_key = api_key or litellm.api_key or get_secret_str("MISTRAL_API_KEY")
             response = openai_chat_completions.embedding(
