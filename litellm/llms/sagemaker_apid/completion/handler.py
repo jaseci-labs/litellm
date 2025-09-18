@@ -543,7 +543,7 @@ class SagemakerAPIDLLM(BaseAWSLLM):
             except Exception as e:
                 ## LOGGING
                 logging_obj.post_call(
-                    input=data["inputs"],
+                    input=data["messages"], # TODO changed 'input' to 'messages'
                     api_key="",
                     original_response=str(e),
                     additional_args={"complete_input_dict": data},

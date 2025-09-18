@@ -46,12 +46,19 @@ def parse_json_block(json_str: str) -> str:
     """
     Parse json block wrapped with ```json```
     """
+    # print("===============================================")
+    # print(json_str)
+    # print("===============================================")
+
     json_str = json_str.strip().replace("```json", "").replace("```", "").strip()
     json_str = fix_trailing_commas(json_str)
-    try:
-        return json.loads(json_str)
-    except Exception as e:
-        raise TypeError(f"Expected an integer, but received {type(json_str).__name__}")
+
+
+    return json_str
+    # try:
+    #     return json.loads(json_str)
+    # except Exception as e:
+    #     raise TypeError(f"Expected an integer, but received {type(json_str).__name__}")
 
 class SagemakerAPIDConfig(BaseConfig):
     """
@@ -137,9 +144,24 @@ class SagemakerAPIDConfig(BaseConfig):
         messages: List,
         custom_prompt_dict: dict,
         hf_model_name: Optional[str],
+        optional_params: dict
     ) -> list[dict]:
         # TODO Error checking
         prompts = []
+
+        format = None
+        if 'response_format' in optional_params:
+            if optional_params['response_format']['type'] == 'json_schema':
+                text = "Your output must be in json format and formatted exactly as specified by the following json schema"
+                text += "<<<Start JSON Schema>>>"
+                text += str(optional_params['response_format']['json_schema'])
+                text += "<<<End JSON Schema>>>"
+
+                format = {
+                    "type" : "text",
+                    "text" : text
+                }
+
         for m in messages:
             if m['role'] == 'user':
                 content = []
@@ -148,11 +170,15 @@ class SagemakerAPIDConfig(BaseConfig):
                         content.append(
                             {
                                 "type" : "image",
-                                "image" : c['image_url']
+                                "image" : c['image_url']['url']
                             }
                         )
                     else:
                         content.append(c)
+
+                if format is not None:
+                    content.append(format)
+
 
                 prompts.append({
                     "role" : "user",
@@ -160,9 +186,25 @@ class SagemakerAPIDConfig(BaseConfig):
                 })
                 
             elif m['role'] == 'system':
-                prompts.append(m)
+                if isinstance(m['content'], str):
+                    prompts.append({
+                        'role': 'system',
+                        'content' : [{
+                            'type' : 'text',
+                            'text' : m['content']
+                        }]
+                    })
+                else:
+                    # TODO: check if it is a list
+                    prompts.append(m)
             else:
                 raise ValueError
+            
+
+
+
+
+                
 
         return prompts
 
@@ -179,6 +221,19 @@ class SagemakerAPIDConfig(BaseConfig):
         stream = inference_params.pop("stream", False)
         # data: Dict = {"parameters": inference_params}
         data: Dict = inference_params # add the inference params flat to the dict
+
+        # print(messages)
+        # print(optional_params)
+
+        with open('output.txt', 'w') as f:
+            # f.write(str(messages))
+            f.write(str(optional_params))
+            f.write("\nLiteLLM Params\n")
+            f.write(str(litellm_params.keys()))
+
+        
+    
+
         if stream is True:
             data["stream"] = True
 
@@ -193,6 +248,7 @@ class SagemakerAPIDConfig(BaseConfig):
             messages=messages,
             custom_prompt_dict=custom_prompt_dict,
             hf_model_name=hf_model_name,
+            optional_params=inference_params
         )
 
         data["messages"] = prompt # endpoint expects messages key, not input
@@ -231,7 +287,9 @@ class SagemakerAPIDConfig(BaseConfig):
         # remove the markdown from the model response and convert to string
         response_str = parse_json_block(raw_response.content.decode("utf-8"))
         completion_response = {}
-        completion_response['generated_text'] = json.dumps(response_str)
+        # completion_response['generated_text'] = json.dumps(response_str)
+        completion_response['generated_text'] = response_str
+
 
         ## LOGGING
         logging_obj.post_call(
@@ -250,11 +308,11 @@ class SagemakerAPIDConfig(BaseConfig):
                 completion_response_choices = completion_response[0]
             else:
                 completion_response_choices = completion_response
-            completion_output = ""
-            if "generation" in completion_response_choices:
-                completion_output += completion_response_choices["generation"]
-            elif "generated_text" in completion_response_choices:
-                completion_output += completion_response_choices["generated_text"]
+            completion_output = completion_response['generated_text']
+            # if "generation" in completion_response_choices:
+            #     completion_output += completion_response_choices["generation"]
+            # elif "generated_text" in completion_response_choices:
+            #     completion_output += completion_response_choices["generated_text"]
 
             # TODO We're not filtering this out. atleast not right now
             # check if the prompt template is part of output, if so - filter it out
