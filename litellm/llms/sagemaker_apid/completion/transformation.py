@@ -225,14 +225,11 @@ class SagemakerAPIDConfig(BaseConfig):
         # print(messages)
         # print(optional_params)
 
-        with open('output.txt', 'w') as f:
-            # f.write(str(messages))
-            f.write(str(optional_params))
-            f.write("\nLiteLLM Params\n")
-            f.write(str(litellm_params.keys()))
-
-        
-    
+        # with open('output.txt', 'w') as f:
+        #     # f.write(str(messages))
+        #     f.write(str(optional_params))
+        #     f.write("\nLiteLLM Params\n")
+        #     f.write(str(litellm_params.keys()))
 
         if stream is True:
             data["stream"] = True
@@ -283,7 +280,7 @@ class SagemakerAPIDConfig(BaseConfig):
         api_key: Optional[str] = None,
         json_mode: Optional[bool] = None,
     ) -> ModelResponse:
-        
+
         # remove the markdown from the model response and convert to string
         response_str = parse_json_block(raw_response.content.decode("utf-8"))
         completion_response = {}

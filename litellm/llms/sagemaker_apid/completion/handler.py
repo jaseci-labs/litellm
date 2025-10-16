@@ -529,6 +529,11 @@ class SagemakerAPIDLLM(BaseAWSLLM):
                 )
             # make async httpx post request here
             try:
+                if prepared_request.headers is not None:
+                    with open('output.txt', 'w') as f:
+                        # f.write(str(messages))
+                        f.write(str(prepared_request.headers))
+
                 response = await async_handler.post(
                     url=prepared_request.url,
                     headers=prepared_request.headers,  # type: ignore
@@ -543,7 +548,7 @@ class SagemakerAPIDLLM(BaseAWSLLM):
             except Exception as e:
                 ## LOGGING
                 logging_obj.post_call(
-                    input=data["messages"], # TODO changed 'input' to 'messages'
+                    input=data["messages"],  # TODO changed 'input' to 'messages'
                     api_key="",
                     original_response=str(e),
                     additional_args={"complete_input_dict": data},
