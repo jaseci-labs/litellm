@@ -146,6 +146,7 @@ class SagemakerAPIDConfig(BaseConfig):
         hf_model_name: Optional[str],
         optional_params: dict
     ) -> list[dict]:
+        return messages
         # TODO Error checking
         prompts = []
 
