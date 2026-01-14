@@ -62,26 +62,20 @@ class AMHLLM(BaseAWSLLM):
             header: Optional[dict] = None
     ):
 
-        if 'token' in litellm_params:
-            return litellm_params['token']
+        if 'token' in litellm_params['proxy_server_request']['body']:
+            return litellm_params['proxy_server_request']['body']['token']
 
         if header is not None:
             if 'token' in litellm_params:
                 return header['token']
 
-        url = litellm_params.get(
+        url = litellm_params['proxy_server_request']['body'].get(
             "auth_url",
             "https://secure-dev.ally.com/acs/v1/access/token"
         )
 
-        client_id = litellm_params.get(
-            "client_id", "c2MY2Y3NwyuYI6dF5sSx7AVTfpu8rSsa"
-        )
-
-        client_secret = litellm_params.get(
-            "client_secret",
-            "PvFESDqZFsAyfJYT125GyiuN7zIjoXlb"
-        )
+        client_id = litellm_params['proxy_server_request']['body']["client_id"]
+        client_secret = litellm_params['proxy_server_request']['body']["client_secret"]
 
         r = requests.post(
             url,
