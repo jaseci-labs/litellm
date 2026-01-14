@@ -3109,6 +3109,7 @@ def completion(  # type: ignore # noqa: PLR0915
                 logging_obj=logging,
                 acompletion=acompletion,
             )
+            response = model_response
 
         elif custom_llm_provider == "amh":
             response = amh_llm.completion(
