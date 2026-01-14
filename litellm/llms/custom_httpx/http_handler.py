@@ -278,6 +278,11 @@ class AsyncHTTPHandler:
                 content=content,
             )
             response = await self.client.send(req, stream=stream)
+
+            if response.status_code != 200:
+                with open("/Users/mzw2db/projects/finetuning-merged/error.txt", "a") as f:
+                    f.write(response.text)
+
             response.raise_for_status()
             return response
         except (httpx.RemoteProtocolError, httpx.ConnectError):

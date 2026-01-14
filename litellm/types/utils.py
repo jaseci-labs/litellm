@@ -2289,6 +2289,8 @@ class LlmProviders(str, Enum):
     SAGEMAKER_CHAT = "sagemaker_chat"
     SAGEMAKER_APID = "sagemaker_apid"
     SAGEMAKER_APID_CHAT = "sagemaker_apid_chat"
+    AMD = "amh"
+    AMH_CHAT = "amh_chat"
     BEDROCK = "bedrock"
     VLLM = "vllm"
     NLP_CLOUD = "nlp_cloud"

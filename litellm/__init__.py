@@ -1092,6 +1092,8 @@ from .llms.sagemaker.completion.transformation import SagemakerConfig
 from .llms.sagemaker.chat.transformation import SagemakerChatConfig
 from .llms.sagemaker_apid.completion.transformation import SagemakerAPIDConfig
 from .llms.sagemaker_apid.chat.transformation import SagemakerAPIDChatConfig
+from .llms.amh.completion.transformation import AMHConfig
+from .llms.amh.chat.transformation import AMHChatConfig
 from .llms.bedrock.chat.invoke_handler import (
     AmazonCohereChatConfig,
     bedrock_tool_name_mappings,
