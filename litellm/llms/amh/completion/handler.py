@@ -45,8 +45,12 @@ class AMHLLM(BaseAWSLLM):
         optional_params: dict,
         extra_headers: Optional[dict] = None,
     ):
-        domain = "https://dev.api.ally.com/amp/inference/utils"
-        base_url = f"{domain}/amh-llm-amh-deploy-200285-dev-f-cia-180800-utils-amh-llm-api-proxy/{model}/v1-0/infer"
+        if 'api_base' in litellm_params:
+            base_url = litellm_params['api_base']
+        else:
+            domain = "https://dev.api.ally.com/amp/inference/utils"
+            base_url = f"{domain}/amh-llm-amh-deploy-200285-dev-f-cia-180800-utils-amh-llm-api-proxy/{model}/v1-0/infer"
+
         prepped_request = APIGEERequest(base_url, data)
 
         return prepped_request
