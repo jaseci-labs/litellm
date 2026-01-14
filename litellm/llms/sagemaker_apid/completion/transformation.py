@@ -305,7 +305,6 @@ class SagemakerAPIDConfig(BaseConfig):
             completion_output = completion_response['generated_text']
 
             json_output = json.loads(response_str)
-            print(json_output)
 
             if isinstance(json_output, dict):
                 if 'output' in completion_output:
