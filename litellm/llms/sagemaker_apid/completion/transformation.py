@@ -300,23 +300,20 @@ class SagemakerAPIDConfig(BaseConfig):
         # TODO the key might be 'inputs', will follow up
         prompt = json.dumps(request_data["messages"])
 
-        ## RESPONSE OBJECT
+        # RESPONSE OBJECT
         try:
-            if isinstance(completion_response, list):
-                completion_response_choices = completion_response[0]
-            else:
-                completion_response_choices = completion_response
             completion_output = completion_response['generated_text']
-            # if "generation" in completion_response_choices:
-            #     completion_output += completion_response_choices["generation"]
-            # elif "generated_text" in completion_response_choices:
-            #     completion_output += completion_response_choices["generated_text"]
 
-            # TODO We're not filtering this out. atleast not right now
-            # check if the prompt template is part of output, if so - filter it out
-            # if completion_output.startswith(prompt) and "<s>" in prompt:
-            #     completion_output = completion_output.replace(prompt, "", 1)
+            json_output = json.loads(response_str)
+            print(json_output)
 
+            if isinstance(json_output, dict):
+                if 'output' in completion_output:
+                    completion_output = json.dumps(json_output["output"]["choices"][0]["message"]["content"])
+                elif 'choices':
+                    completion_output = json.dumps(json_output["choices"][0]["message"]["content"])
+
+            # print(completion_output)
             model_response.choices[0].message.content = completion_output  # type: ignore
         except Exception:
             raise SagemakerError(
@@ -324,8 +321,8 @@ class SagemakerAPIDConfig(BaseConfig):
                 status_code=500,
             )
 
-        ## TODO convert the prompt to a string
-        ## CALCULATING USAGE - baseten charges on time, not tokens - have some mapping of cost here.
+        # TODO convert the prompt to a string
+        # CALCULATING USAGE - baseten charges on time, not tokens - have some mapping of cost here.
         prompt_tokens = token_counter(
             text=prompt, count_response_tokens=True
         )  # doesn't apply any default token count from openai's chat template

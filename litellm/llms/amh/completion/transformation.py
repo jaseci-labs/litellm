@@ -209,6 +209,12 @@ class AMHConfig(BaseConfig):
             #     completion_response_choices = completion_response
             completion_output = completion_response['generated_text']
 
+            json_output = json.loads(response_str)
+
+            if isinstance(json_output, dict):
+                if 'output' in completion_output:
+                    completion_output = json.dumps(json_output["output"]["choices"][0]["message"]["content"])
+
             model_response.choices[0].message.content = completion_output  # type: ignore
         except Exception:
             raise AMHError(
