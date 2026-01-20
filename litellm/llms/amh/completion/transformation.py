@@ -186,8 +186,7 @@ class AMHConfig(BaseConfig):
         json_mode: Optional[bool] = None,
     ) -> ModelResponse:
 
-        # remove the markdown from the model response and convert to string
-        response_str = parse_json_block(raw_response.content.decode("utf-8"))
+        response_str = raw_response.json()["output"]["choices"][0]["message"]["content"]
         completion_response = {}
         completion_response['generated_text'] = response_str
 
@@ -203,18 +202,7 @@ class AMHConfig(BaseConfig):
 
         # RESPONSE OBJECT
         try:
-            # if isinstance(completion_response, list):
-            #     completion_response_choices = completion_response[0]
-            # else:
-            #     completion_response_choices = completion_response
             completion_output = completion_response['generated_text']
-
-            json_output = json.loads(response_str)
-
-            if isinstance(json_output, dict):
-                if 'output' in completion_output:
-                    completion_output = json.dumps(json_output["output"]["choices"][0]["message"]["content"])
-
             model_response.choices[0].message.content = completion_output  # type: ignore
         except Exception:
             raise AMHError(
@@ -222,7 +210,6 @@ class AMHConfig(BaseConfig):
                 status_code=500,
             )
 
-        # TODO convert the prompt to a string
         # CALCULATING USAGE - baseten charges on time, not tokens - have some mapping of cost here.
         prompt_tokens = token_counter(
             text=prompt, count_response_tokens=True
