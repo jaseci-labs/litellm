@@ -188,8 +188,6 @@ class AMHConfig(BaseConfig):
 
         response_str = raw_response.json()["output"]["choices"][0]["message"]["content"]
 
-        response_str = "THIS IS GOING TO BREAK EVEYRTHING"
-
         completion_response = {}
         completion_response['generated_text'] = response_str
 
